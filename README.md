@@ -1,6 +1,10 @@
 # TrioVibe - Creative Tech Team Website
 
-A modern, elegant, and responsive website showcasing TrioVibe's expertise in Micro SaaS applications, UX/UI solutions, website development, and workflow automations.
+A modern, elegant, and responsive website showcasing TrioVibe's expertise in Micro SaaS applications, UX/UI solutions, and website development.
+
+## About
+
+TrioVibe is a business site for a small team offering Micro SaaS apps, UX/UI design, and websites.
 
 ## Features
 
@@ -84,7 +88,7 @@ You can change these in the `<head>` section of `index.html`.
 ## Sections
 
 1. **Hero Section** - Eye-catching introduction with call-to-action buttons
-2. **Services** - Four service cards showcasing expertise
+2. **Services** - Three service cards showcasing expertise
 3. **Projects** - Portfolio showcase with hover effects
 4. **Contact** - Contact form and social links
 5. **Footer** - Additional navigation and copyright
@@ -122,4 +126,3 @@ This project is created for TrioVibe. Feel free to customize it for your own use
 ---
 
 **Built with ❤️ by TrioVibe**
-
