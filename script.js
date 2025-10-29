@@ -305,3 +305,31 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// ============================================
+// Logo click → Go to Home
+// ============================================
+
+const logoClickableElements = document.querySelectorAll('.nav-logo, .footer-logo, .logo-text');
+
+logoClickableElements.forEach(el => {
+	el.style.cursor = 'pointer';
+	el.addEventListener('click', () => {
+		const target = document.querySelector('#home');
+		if (target) {
+			const headerOffset = 80;
+			const elementPosition = target.getBoundingClientRect().top;
+			const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+			window.scrollTo({
+				top: offsetPosition,
+				behavior: 'smooth'
+			});
+		} else {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		}
+
+		// Close mobile menu if open
+		navMenu && navMenu.classList.remove('active');
+		navToggle && navToggle.classList.remove('active');
+	});
+});
