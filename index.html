@@ -195,7 +195,7 @@
                             </div>
                             <div>
                                 <h4>Email</h4>
-                                <p>hello@triovibe.com</p>
+                                <p>info@triovibe.tech</p>
                             </div>
                         </div>
                     </div>
@@ -226,14 +226,18 @@
                         </a>
                     </div>
                 </div>
-                <form class="contact-form" data-aos="fade-left">
+                <form class="contact-form" data-aos="fade-left" action="https://formsubmit.co/info@triovibe.tech" method="POST">
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_template" value="table">
                     <div class="form-group">
                         <label for="name">Name</label>
                         <input type="text" id="name" name="name" placeholder="Your name" required>
+                        <span class="error-message">Name is required</span>
                     </div>
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+                        <span class="error-message">Valid email is required</span>
                     </div>
                     <div class="form-group">
                         <label for="service">Service</label>
@@ -242,11 +246,14 @@
                             <option value="saas">Micro SaaS</option>
                             <option value="design">UX/UI Design</option>
                             <option value="development">Web Development</option>
+                            <option value="general">General Inquiry</option>
                         </select>
+                        <span class="error-message">Please select a service</span>
                     </div>
                     <div class="form-group">
                         <label for="message">Message</label>
                         <textarea id="message" name="message" rows="5" placeholder="Tell us about your project..." required></textarea>
+                        <span class="error-message">Message is required</span>
                     </div>
                     <button type="submit" class="btn btn-primary">Send Message</button>
                 </form>
@@ -274,6 +281,9 @@
             </div>
         </div>
     </footer>
+
+    <!-- Toaster Container -->
+    <div class="toaster-container" id="toaster-container"></div>
 
     <script src="script.js"></script>
 </body>

@@ -98,43 +98,228 @@ projectCards.forEach((card, index) => {
 });
 
 // ============================================
+// Toaster Notification System
+// ============================================
+
+function showToaster(type, title, message, duration = 5000) {
+    const container = document.getElementById('toaster-container');
+    if (!container) return;
+    
+    const toaster = document.createElement('div');
+    toaster.className = `toaster ${type}`;
+    
+    // Success icon
+    const successIcon = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5"/>
+        </svg>
+    `;
+    
+    // Error icon
+    const errorIcon = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    `;
+    
+    const icon = type === 'success' ? successIcon : errorIcon;
+    
+    toaster.innerHTML = `
+        <div class="toaster-icon">
+            ${icon}
+        </div>
+        <div class="toaster-content">
+            <div class="toaster-title">${title}</div>
+            <div class="toaster-message">${message}</div>
+        </div>
+        <button class="toaster-close" aria-label="Close notification">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    `;
+    
+    container.appendChild(toaster);
+    
+    // Trigger animation
+    setTimeout(() => {
+        toaster.classList.add('show');
+    }, 10);
+    
+    // Close button handler
+    const closeBtn = toaster.querySelector('.toaster-close');
+    const closeToaster = () => {
+        toaster.classList.remove('show');
+        setTimeout(() => {
+            if (toaster.parentNode) {
+                toaster.parentNode.removeChild(toaster);
+            }
+        }, 300);
+    };
+    
+    closeBtn.addEventListener('click', closeToaster);
+    
+    // Auto-close after duration
+    if (duration > 0) {
+        setTimeout(closeToaster, duration);
+    }
+    
+    return toaster;
+}
+
+// ============================================
 // Form Handling
 // ============================================
 
 const contactForm = document.querySelector('.contact-form');
 
 if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    const formGroups = contactForm.querySelectorAll('.form-group');
+    const formInputs = contactForm.querySelectorAll('input, select, textarea');
+    
+    // Remove error class on input
+    formInputs.forEach(input => {
+        input.addEventListener('input', () => {
+            const formGroup = input.closest('.form-group');
+            if (formGroup) {
+                formGroup.classList.remove('error');
+            }
+        });
+        
+        input.addEventListener('blur', () => {
+            validateField(input);
+        });
+    });
+    
+    // Validate individual field
+    function validateField(field) {
+        const formGroup = field.closest('.form-group');
+        if (!formGroup) return true;
+        
+        let isValid = true;
+        
+        // Check if field is required and empty
+        if (field.hasAttribute('required')) {
+            if (field.type === 'email') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                isValid = field.value.trim() !== '' && emailRegex.test(field.value);
+            } else if (field.tagName === 'SELECT') {
+                isValid = field.value !== '';
+            } else {
+                isValid = field.value.trim() !== '';
+            }
+        }
+        
+        if (!isValid) {
+            formGroup.classList.add('error');
+            return false;
+        } else {
+            formGroup.classList.remove('error');
+            return true;
+        }
+    }
+    
+    // Validate all fields
+    function validateForm() {
+        let isValid = true;
+        formInputs.forEach(input => {
+            if (!validateField(input)) {
+                isValid = false;
+            }
+        });
+        return isValid;
+    }
+    
+    contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Validate all fields
+        if (!validateForm()) {
+            showToaster('error', 'Validation Error', 'Please fill in all required fields correctly.');
+            
+            // Scroll to first error
+            const firstError = contactForm.querySelector('.form-group.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const input = firstError.querySelector('input, select, textarea');
+                if (input) {
+                    input.focus();
+                }
+            }
+            return;
+        }
         
         // Get form data
         const formData = new FormData(contactForm);
         const data = Object.fromEntries(formData);
         
+        // Map service values to readable names
+        const serviceNames = {
+            'saas': 'Micro SaaS',
+            'design': 'UX/UI Design',
+            'development': 'Web Development',
+            'general': 'General Inquiry'
+        };
+        
         // Add smooth loading animation
         const submitButton = contactForm.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
         
-        // Simulate form submission
+        // Update button state
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
         
-        // Here you would normally send the data to a server
-        // For demo purposes, we'll simulate a delay
-        setTimeout(() => {
-            submitButton.textContent = '✓ Message Sent!';
-            submitButton.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        try {
+            // Prepare form data for FormSubmit
+            const formAction = contactForm.getAttribute('action');
+            const submitData = new FormData();
             
-            // Reset form
-            contactForm.reset();
+            // Add all form fields
+            submitData.append('name', data.name);
+            submitData.append('email', data.email);
+            submitData.append('service', data.service);
+            submitData.append('message', data.message);
             
-            // Reset button after 3 seconds
-            setTimeout(() => {
+            // Add FormSubmit specific fields
+            submitData.append('_subject', `New Contact Form Submission - ${serviceNames[data.service] || 'General Inquiry'}`);
+            submitData.append('_captcha', 'false');
+            submitData.append('_template', 'table');
+            
+            // Submit to FormSubmit
+            const response = await fetch(formAction, {
+                method: 'POST',
+                body: submitData
+            });
+            
+            if (response.ok) {
+                // Show success toaster
+                showToaster('success', 'Message Sent!', 'Thank you for contacting us. We\'ll get back to you soon.');
+                
+                // Reset form
+                contactForm.reset();
+                
+                // Remove all error classes
+                formGroups.forEach(group => group.classList.remove('error'));
+                
+                // Reset button
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
-                submitButton.style.background = '';
-            }, 3000);
-        }, 1500);
+            } else {
+                throw new Error('Form submission failed');
+            }
+        } catch (error) {
+            console.error('Email sending failed:', error);
+            
+            // Show error toaster
+            showToaster('error', 'Send Failed', 'Unable to send your message. Please try again later.');
+            
+            // Reset button
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        }
     });
 }
 
